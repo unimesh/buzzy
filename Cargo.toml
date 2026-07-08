@@ -1,0 +1,34 @@
+[workspace]
+resolver = "2"
+members = ["crates/*"]
+
+[workspace.package]
+version = "0.1.0"
+edition = "2021"
+license = "MIT"
+authors = ["Utkarsh Nimesh <utkarsh.nimesh@gmail.com>"]
+repository = "https://github.com/unimesh/buzzy"
+
+[workspace.dependencies]
+# Internal crates (path deps declared once, inherited by members)
+buzzy-crdt = { path = "crates/buzzy-crdt" }
+buzzy-protocol = { path = "crates/buzzy-protocol" }
+buzzy-net = { path = "crates/buzzy-net" }
+buzzy-crdt-mock = { path = "crates/buzzy-crdt-mock" }
+buzzy-crdt-automerge = { path = "crates/buzzy-crdt-automerge" }
+
+# External deps (versions pinned once, features chosen per-consumer)
+thiserror = "1"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+# Convention enforcement, inherited by every crate via `[lints] workspace = true`.
+# See CLAUDE.md: no unwrap in library code, tracing not println, no stray debug macros.
+[workspace.lints.rust]
+unsafe_code = "forbid"
+unused_must_use = "deny"
+
+[workspace.lints.clippy]
+unwrap_used = "deny"
+dbg_macro = "deny"
+todo = "warn"

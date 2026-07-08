@@ -1,0 +1,5 @@
+# `cargo xtask <cmd>` — the single entry point for repo automation (fmt, clippy,
+# tests, architecture checks). CI and the pre-commit hook both call it, so there
+# is exactly one definition of "green".
+[alias]
+xtask = "run --quiet --package xtask --"

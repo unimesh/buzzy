@@ -1,0 +1,12 @@
+[package]
+name = "buzzy-crdt-mock"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Reference (non-CRDT) engine implementing the buzzy-crdt traits — proves the boundary and serves as a test fixture."
+
+[lints]
+workspace = true
+
+[dependencies]
+buzzy-crdt.workspace = true

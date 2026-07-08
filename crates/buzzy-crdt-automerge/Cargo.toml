@@ -1,0 +1,15 @@
+[package]
+name = "buzzy-crdt-automerge"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Automerge implementation of the buzzy-crdt traits — the ONLY crate permitted to depend on automerge."
+
+[lints]
+workspace = true
+
+[dependencies]
+buzzy-crdt.workspace = true
+# Phase 1 adds:  automerge = "0.10"
+# This crate is the sole permitted home of that dependency; the boundary is
+# enforced by xtask/tests/architecture.rs.

@@ -1,0 +1,12 @@
+[package]
+name = "buzzy-crdt"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Engine-agnostic CRDT contracts — the trait boundary the rest of Buzzy depends on."
+
+[lints]
+workspace = true
+
+[dependencies]
+thiserror.workspace = true

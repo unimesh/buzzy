@@ -1,0 +1,13 @@
+[package]
+name = "buzzy-net"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Peer networking for Buzzy — mDNS discovery, QUIC transport, sync protocol driver."
+
+[lints]
+workspace = true
+
+[dependencies]
+buzzy-crdt.workspace = true
+buzzy-protocol.workspace = true

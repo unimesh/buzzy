@@ -1,0 +1,13 @@
+[package]
+name = "buzzy-protocol"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "Shared wire and JSON-RPC types for the Buzzy socket and peer protocols."
+
+[lints]
+workspace = true
+
+[dependencies]
+serde.workspace = true
+serde_json.workspace = true

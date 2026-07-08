@@ -1,0 +1,5 @@
+#!/bin/sh
+# Fast local gate: formatting + clippy. Same definition CI uses (via `cargo xtask`).
+# Enable once per clone with:  cargo xtask setup
+# Bypass in a pinch with:      git commit --no-verify
+exec cargo xtask check

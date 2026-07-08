@@ -1,0 +1,22 @@
+[package]
+name = "buzzy-daemon"
+version.workspace = true
+edition.workspace = true
+license.workspace = true
+description = "buzd — the Buzzy daemon: socket server, file watcher, ingestion gate, document registry."
+
+[[bin]]
+name = "buzd"
+path = "src/main.rs"
+
+[lints]
+workspace = true
+
+[dependencies]
+buzzy-crdt.workspace = true
+buzzy-protocol.workspace = true
+buzzy-net.workspace = true
+# Composition root: the concrete engine is a dependency of the daemon binary ONLY.
+# Phase 0 wires the reference engine; Phase 1 also adds buzzy-crdt-automerge here
+# and swaps the single line in main.rs. No other module names an engine.
+buzzy-crdt-mock.workspace = true
