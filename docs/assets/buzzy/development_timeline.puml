@@ -1,0 +1,53 @@
+@startgantt development_timeline
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+
+title Development Roadmap — Parallel Workstreams
+projectscale weekly
+
+Project starts 2026-07-14
+
+-- Phase 1: Foundation --
+[API contract design] lasts 2 weeks and is colored in #E3F2FD
+[Operation format spec] lasts 2 weeks and is colored in #E3F2FD
+[Socket protocol spec] lasts 2 weeks and is colored in #E3F2FD
+[Wire envelope spec] lasts 2 weeks and is colored in #E3F2FD
+
+-- Phase 2: Parallel Build --
+[CRDT engine] lasts 9 weeks and is colored in #E8F5E9
+[CRDT engine] starts at [API contract design]'s end
+[Comment anchoring] lasts 6 weeks and is colored in #E8F5E9
+[Comment anchoring] starts at [CRDT engine]'s start
+[MD structure preservation] lasts 7 weeks and is colored in #E8F5E9
+[MD structure preservation] starts at [CRDT engine]'s start
+
+[Identity + keypair] lasts 4 weeks and is colored in #F3E5F5
+[Identity + keypair] starts at [Operation format spec]'s end
+[Access control] lasts 5 weeks and is colored in #FFF3E0
+[Access control] starts at [Identity + keypair]'s start
+[Permission enforcement] lasts 3 weeks and is colored in #FFF3E0
+[Permission enforcement] starts at [Access control]'s end
+
+[LAN sync (QUIC)] lasts 4 weeks and is colored in #FFEBEE
+[LAN sync (QUIC)] starts at [Wire envelope spec]'s end
+[Relay server] lasts 4 weeks and is colored in #FFEBEE
+[Relay server] starts at [LAN sync (QUIC)]'s end
+[Link sharing] lasts 3 weeks and is colored in #FFEBEE
+[Link sharing] starts at [Relay server]'s end
+
+[Obsidian plugin] lasts 4 weeks and is colored in #F5F5F5
+[Obsidian plugin] starts at [Socket protocol spec]'s end
+[VS Code extension] lasts 3 weeks and is colored in #F5F5F5
+[VS Code extension] starts at [Obsidian plugin]'s start
+[CLI tool] lasts 2 weeks and is colored in #F5F5F5
+[CLI tool] starts at [Obsidian plugin]'s start
+
+-- Phase 3: Integration --
+[Integration testing] lasts 4 weeks and is colored in #FCE4EC
+[Integration testing] starts at [CRDT engine]'s end
+[Dogfooding] lasts 3 weeks and is colored in #FCE4EC
+[Dogfooding] starts at [Integration testing]'s end
+
+@endgantt

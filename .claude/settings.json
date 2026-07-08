@@ -1,0 +1,22 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(cargo build*)",
+      "Bash(cargo test*)",
+      "Bash(cargo fmt*)",
+      "Bash(cargo clippy*)",
+      "Bash(cargo run*)",
+      "Bash(ls *)",
+      "Bash(find *)",
+      "Bash(grep *)",
+      "Bash(cat *)",
+      "Bash(wc *)",
+      "Bash(head *)",
+      "Bash(tail *)",
+      "Bash(plantuml *)",
+      "Read",
+      "Write",
+      "Edit"
+    ]
+  }
+}

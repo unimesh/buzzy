@@ -1,0 +1,52 @@
+@startuml mvp_file_layout
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam objectBorderColor #333333
+
+title File Layout — MVP On-Disk Structure
+
+object "~/.buzd/ (daemon config)" as config #E3F2FD {
+  identity.key = "Ed25519 private key (PEM)"
+  identity.pub = "Ed25519 public key"
+  config.toml = "daemon configuration"
+  peers.toml = "known peer registry"
+  buzd.sock = "Unix socket (runtime)"
+  buzd.pid = "PID file (runtime)"
+}
+
+object "User's vault/ (documents)" as vault #FFF8E1 {
+  notes.md = "plain markdown (always readable)"
+  meeting.md = "plain markdown"
+  project.md = "plain markdown"
+  "(no sidecar files visible)" = ""
+}
+
+object "vault/.buzzy/ (CRDT state — hidden)" as buzzydir #E8F5E9 {
+  config.toml = "vault-level buzzy config"
+  index.json = "path ↔ UUID mapping + hashes"
+  "state/<uuid-1>.bin" = "CRDT binary (engine-specific)"
+  "state/<uuid-2>.bin" = "CRDT binary (engine-specific)"
+  "state/<uuid-3>.bin" = "CRDT binary (engine-specific)"
+}
+
+object "index.json" as indexdetail #F5F5F5 {
+  documents = "{uuid → {path, lastModified, hash}}"
+  engine = "automerge (identifies format)"
+  version = "1"
+}
+
+object "config.toml (daemon)" as configdetail #F5F5F5 {
+  listen = "/tmp/buzzy.sock"
+  log_level = "info"
+  watch_debounce_ms = 100
+  mdns_enabled = true
+  quic_port = 4433
+  quic_bind = "0.0.0.0"
+}
+
+config -[hidden]down- vault
+vault -[hidden]down- buzzydir
+
+@enduml

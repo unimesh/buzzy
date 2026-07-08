@@ -1,0 +1,70 @@
+@startuml protocol_alternatives
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+skinparam objectBorderColor #333333
+
+title Protocol Stack — Decision Matrix
+
+map "Layer 0: CRDT Engine" as l0 {
+  Option A => Automerge-rs (RGA + Peritext marks)
+  Option B => yrs (YATA + Y.Text attributes)
+  Option C => Diamond Types (Eg-walker)
+  Option D => Custom (Fugue-based)
+}
+
+map "Layer 0b: Document Model" as l0b {
+  Option A => Flat text CRDT + block markers (Automerge blocks)
+  Option B => Tree CRDT (Y.XmlFragment)
+  Option C => Hybrid: text CRDT + separate block Map
+}
+
+map "Layer 1: Wire Format" as l1 {
+  Option A => Automerge binary (columnar, spec'd)
+  Option B => Yjs binary (lib0, spec'd)
+  Option C => Custom envelope + CRDT payload
+}
+
+map "Layer 2: Sync Protocol" as l2 {
+  Option A => Automerge sync (Bloom filter delta)
+  Option B => y-protocols (state vector + updates)
+  Option C => Custom (state vector + push)
+}
+
+map "Layer 3: Transport" as l3 {
+  Option A => QUIC (quinn-rs)
+  Option B => WebSocket
+  Option C => WebRTC data channels
+  Option D => Iroh (QUIC + relay)
+}
+
+map "Layer 4: Discovery" as l4 {
+  Option A => mDNS/DNS-SD (LAN only)
+  Option B => mDNS + DHT (global)
+  Option C => mDNS + rendezvous server (Iroh/DERP model)
+}
+
+map "Layer 5: Identity" as l5 {
+  Option A => Ed25519 per-device, TOFU
+  Option B => Ed25519 + sigchain (multi-device)
+  Option C => DID (W3C)
+  Option D => Ed25519 + optional OIDC binding
+}
+
+map "Layer 6: Sidecar Format" as l6 {
+  Option A => Automerge binary (.buzzy)
+  Option B => Yjs binary (.buzzy)
+  Option C => Event graph log (Diamond Types)
+  Option D => Custom inspectable (CBOR/MessagePack)
+}
+
+l0 -[hidden]down- l0b
+l0b -[hidden]down- l1
+l1 -[hidden]down- l2
+l2 -[hidden]down- l3
+l3 -[hidden]down- l4
+l4 -[hidden]down- l5
+l5 -[hidden]down- l6
+
+@enduml

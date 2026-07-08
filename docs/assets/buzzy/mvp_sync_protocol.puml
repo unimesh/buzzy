@@ -1,0 +1,58 @@
+@startuml mvp_sync_protocol
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+skinparam sequenceArrowThickness 2
+skinparam sequenceLifeLineBorderColor #666666
+
+title CRDT Sync Protocol — Peer-to-Peer (MVP, LAN)
+
+participant "Daemon A\n(Alice)" as a
+participant "Daemon B\n(Bob)" as b
+
+== Peer Discovery (mDNS) ==
+
+a -> a : Advertise:\n_buzzy._tcp.local\nTXT: pubkey=ed25519:abc...
+b -> b : Advertise:\n_buzzy._tcp.local\nTXT: pubkey=ed25519:xyz...
+a <-> b : mDNS resolution:\nDiscover peer addresses
+
+== QUIC Handshake ==
+
+a -> b : QUIC connect (port 4433)
+b --> a : QUIC accept
+a -> b : **Hello** {pubkey: "abc...", protocol_version: 1}
+b --> a : **Hello** {pubkey: "xyz...", protocol_version: 1}
+
+== Document Sync (state vector exchange) ==
+
+a -> b : **SyncRequest** {\n  doc_id: "uuid-1",\n  state_vector: [A:42, B:38]\n}
+note right: "I have A's changes up to 42\nand B's changes up to 38"
+
+b -> b : Compute missing changes:\nB has [A:42, B:41]\nA is missing B:39, B:40, B:41
+b --> a : **SyncResponse** {\n  doc_id: "uuid-1",\n  changes: [B:39, B:40, B:41],\n  state_vector: [A:42, B:41]\n}
+
+a -> a : Apply changes via Automerge\nRe-render .md to disk
+
+a --> b : **SyncRequest** {\n  doc_id: "uuid-1",\n  state_vector: [A:42, B:41]\n}
+note left: Confirm convergence
+
+b --> a : **SyncResponse** {\n  changes: [],\n  state_vector: [A:42, B:41]\n}
+note right: In sync ✓
+
+== Live Editing (push-based after initial sync) ==
+
+a -> b : **Change** {\n  doc_id: "uuid-1",\n  change: <automerge binary>,\n  seq: A:43\n}
+b -> b : Apply + render
+b --> a : **Ack** {seq: A:43}
+
+b -> a : **Change** {\n  doc_id: "uuid-1",\n  change: <automerge binary>,\n  seq: B:42\n}
+a -> a : Apply + render
+a --> b : **Ack** {seq: B:42}
+
+== Presence (lightweight, unreliable) ==
+
+a -> b : **Presence** {\n  doc_id: "uuid-1",\n  cursor: {pos: 156, selection: [156, 172]},\n  name: "Alice"\n}
+b -> a : **Presence** {\n  doc_id: "uuid-1",\n  cursor: {pos: 89, selection: null},\n  name: "Bob"\n}
+
+@enduml

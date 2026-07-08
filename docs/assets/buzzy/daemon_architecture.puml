@@ -1,0 +1,56 @@
+@startuml daemon_architecture
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam componentStyle rectangle
+skinparam ranksep 30
+skinparam nodesep 25
+
+title Daemon + Socket Architecture
+
+package "Editor Plugins" as editors #F5F5F5 {
+  [Obsidian Plugin] as obs
+  [VS Code Extension] as vsc
+  [Neovim Client] as nvim
+  [Any Editor] as any
+}
+
+package "buzd Daemon" as daemon #E3F2FD {
+  [JSON-RPC Server\n(Unix Socket)] as rpc
+  [CRDT Engine\n(pluggable: Automerge, Loro, yrs)] as crdt
+  [Permission\nEnforcer] as perm
+  [File Watcher\n(notify-rs)] as watch
+  [Network Manager] as net
+}
+
+package "Local Filesystem" as fs #FFF8E1 {
+  [document.md] as md
+  [.buzzy/state/<uuid>.bin] as sidecar
+  [.buzzy/index.json] as index
+}
+
+package "Network" as network #FFEBEE {
+  [LAN Peers\n(mDNS + QUIC)] as lan
+  [Relay Server\n(store-and-forward)] as relay
+  [Git Remote\n(async)] as gitremote
+}
+
+obs --> rpc : JSON-RPC
+vsc --> rpc : JSON-RPC
+nvim --> rpc : JSON-RPC
+any --> rpc : JSON-RPC
+
+rpc --> crdt : operations (via trait)
+crdt --> perm : validate
+crdt --> watch : write
+watch --> md : read/write
+watch --> sidecar : read/write
+watch --> index : update hashes
+
+net --> lan : E2E encrypted
+net --> relay : E2E encrypted
+net --> gitremote : push/pull
+crdt <--> net : sync (via SyncSession trait)
+
+@enduml

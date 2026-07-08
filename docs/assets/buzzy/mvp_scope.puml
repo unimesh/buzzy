@@ -1,0 +1,51 @@
+@startuml mvp_scope
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam componentStyle rectangle
+skinparam ranksep 25
+skinparam nodesep 20
+
+title MVP Scope — What Ships vs What Waits
+
+rectangle "**MVP (12 weeks)**" as mvp #E8F5E9 {
+  rectangle "Core Daemon" as core #C8E6C9 {
+    [Pluggable CRDT engine\n(Automerge-rs for MVP)] as crdt
+    [Character-level text CRDT] as charcrdt
+    [File watcher (notify-rs)] as watch
+    [JSON-RPC server (Unix socket)] as rpc
+    [Single-user identity (keypair)] as id
+  }
+  rectangle "LAN Sync" as lan #C8E6C9 {
+    [mDNS peer discovery] as mdns
+    [Direct QUIC connection] as quic
+    [Unencrypted LAN mode] as noenc
+  }
+  rectangle "Editor Plugin (one)" as plugin #C8E6C9 {
+    [Obsidian plugin (TypeScript)] as obs
+    [Real-time edit sync] as editsync
+    [Presence indicators] as presence
+  }
+  rectangle "CLI" as cli #C8E6C9 {
+    [buzzy start/stop/status] as clictl
+    [buzzy share <file> --peer] as clishare
+    [buzzy log <file>] as clilog
+  }
+}
+
+rectangle "**Post-MVP (deferred)**" as later #FFF3E0 {
+  [E2E encryption] as enc
+  [.access permission model] as access
+  [Relay server] as relay
+  [Comment anchoring] as comments
+  [AI peer integration] as ai
+  [Link sharing / capability URLs] as linkshare
+  [VS Code / Neovim plugins] as otherplugins
+  [Markdown block-level CRDT] as blockcrdt
+  [Key rotation / revocation] as keyrot
+}
+
+mvp -[hidden]right- later
+
+@enduml

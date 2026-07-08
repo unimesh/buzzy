@@ -1,0 +1,52 @@
+@startuml external_edit_flow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam sequenceArrowThickness 2
+skinparam sequenceLifeLineBorderColor #666666
+
+title External Edit Handling — Permission Enforcement at Daemon Level
+
+actor "User" as user
+participant "External Editor\n(vim, sed, script)" as ext
+participant "Filesystem\n(.md file)" as fs
+participant "buzd Daemon" as daemon
+participant "Remote Peers" as peers
+
+== Owner or Editor (sufficient permission) ==
+
+user -> ext : Edit document.md
+ext -> fs : Write changes
+fs -> daemon : inotify/FSEvents trigger
+activate daemon
+daemon -> daemon : Diff against last known state
+daemon -> daemon : Generate synthetic CRDT ops\n(attributed to local identity)
+daemon -> daemon : Check .access:\nlocal pubkey has edit? **YES**
+daemon -> peers : Broadcast encrypted operations
+deactivate daemon
+peers -> peers : Verify sender pubkey\n→ edit granted → merge
+
+== Commenter or Viewer (insufficient permission) ==
+
+user -> ext : Edit document.md
+ext -> fs : Write changes
+fs -> daemon : inotify/FSEvents trigger
+activate daemon
+daemon -> daemon : Diff against last known state
+daemon -> daemon : Generate synthetic CRDT ops\n(attributed to local identity)
+daemon -> daemon : Check .access:\nlocal pubkey has edit? **NO**
+daemon -> daemon : **Quarantine** operation\n(store locally, do not sync)
+daemon -> user : Notification:\n"Edit not synced —\ninsufficient permissions"
+deactivate daemon
+
+...Later: incoming remote operation...
+
+peers -> daemon : Remote operation arrives
+activate daemon
+daemon -> daemon : Merge remote op into CRDT state
+daemon -> fs : Re-render .md from\ncanonical CRDT state\n(quarantined edit disappears)
+deactivate daemon
+daemon -> user : Optional: "Offer fork?\nSave as personal copy"
+
+@enduml

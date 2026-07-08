@@ -1,0 +1,60 @@
+@startgantt mvp_timeline
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+
+title MVP Development Timeline — 12 Weeks
+
+projectscale weekly
+Project starts 2026-07-14
+
+-- Week 1-2: Foundation --
+[Cargo workspace scaffold] lasts 1 weeks and is colored in #E3F2FD
+[Automerge-rs integration PoC] lasts 2 weeks and is colored in #E8F5E9
+[JSON-RPC protocol spec (types)] lasts 1 weeks and is colored in #E3F2FD
+[QUIC handshake PoC] lasts 2 weeks and is colored in #FFEBEE
+
+-- Week 3-5: Core Daemon --
+[File watcher + debouncer] lasts 2 weeks and is colored in #E8F5E9
+[File watcher + debouncer] starts at [Automerge-rs integration PoC]'s end
+[Doc manager (open/edit/render)] lasts 3 weeks and is colored in #E8F5E9
+[Doc manager (open/edit/render)] starts at [Automerge-rs integration PoC]'s end
+[Socket server (tokio)] lasts 2 weeks and is colored in #E8F5E9
+[Socket server (tokio)] starts at [JSON-RPC protocol spec (types)]'s end
+[External edit detection + ingest] lasts 2 weeks and is colored in #E8F5E9
+[External edit detection + ingest] starts at [File watcher + debouncer]'s end
+
+-- Week 4-7: Networking --
+[mDNS discovery] lasts 2 weeks and is colored in #FFEBEE
+[mDNS discovery] starts at [QUIC handshake PoC]'s end
+[Sync protocol (state vectors)] lasts 3 weeks and is colored in #FFEBEE
+[Sync protocol (state vectors)] starts at [mDNS discovery]'s end
+[Live push + ack] lasts 2 weeks and is colored in #FFEBEE
+[Live push + ack] starts at [Sync protocol (state vectors)]'s end
+[Presence broadcast] lasts 1 weeks and is colored in #FFEBEE
+[Presence broadcast] starts at [Live push + ack]'s end
+
+-- Week 4-9: Obsidian Plugin --
+[Plugin scaffold + socket client] lasts 2 weeks and is colored in #F3E5F5
+[Plugin scaffold + socket client] starts at [Socket server (tokio)]'s end
+[CM6 extension (intercept edits)] lasts 3 weeks and is colored in #F3E5F5
+[CM6 extension (intercept edits)] starts at [Plugin scaffold + socket client]'s end
+[Remote change applicator] lasts 2 weeks and is colored in #F3E5F5
+[Remote change applicator] starts at [CM6 extension (intercept edits)]'s end
+[Presence UI (cursors + names)] lasts 2 weeks and is colored in #F3E5F5
+[Presence UI (cursors + names)] starts at [Remote change applicator]'s end
+
+-- Week 5-7: CLI --
+[CLI (start/stop/status/share)] lasts 2 weeks and is colored in #FFF8E1
+[CLI (start/stop/status/share)] starts at [Socket server (tokio)]'s end
+
+-- Week 10-12: Integration --
+[End-to-end test harness] lasts 2 weeks and is colored in #FCE4EC
+[End-to-end test harness] starts at [Presence broadcast]'s end
+[2-peer dogfooding] lasts 2 weeks and is colored in #FCE4EC
+[2-peer dogfooding] starts at [End-to-end test harness]'s end
+[Bug fixes + polish] lasts 2 weeks and is colored in #FCE4EC
+[Bug fixes + polish] starts at [End-to-end test harness]'s end
+
+@endgantt

@@ -1,0 +1,62 @@
+@startuml mvp_obsidian_plugin
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam ranksep 20
+skinparam nodesep 15
+
+title Obsidian Plugin — Internal Architecture (MVP)
+
+package "Obsidian Process" as obsidian #F5F5F5 {
+  [Obsidian Editor\n(CodeMirror 6)] as cm6
+  [Vault file events] as vaultevents
+}
+
+package "buzzy Plugin" as plugin #E3F2FD {
+
+  package "Connection Layer" as conn #BBDEFB {
+    [Socket client\n(Unix socket IPC)] as socket
+    [Reconnect manager\n(exponential backoff)] as reconn
+    [Message serializer\n(JSON-RPC 2.0)] as serial
+  }
+
+  package "Document Sync" as docsync #BBDEFB {
+    [CodeMirror extension\n(intercept transactions)] as cmext
+    [Operation translator\n(CM ops → buzzy ops)] as optrans
+    [Remote change applicator\n(buzzy ops → CM transactions)] as remoteapply
+    [Conflict marker\n(highlight concurrent edits)] as conflict
+  }
+
+  package "Presence UI" as presui #BBDEFB {
+    [Cursor decorations\n(remote cursors)] as cursors
+    [Selection highlights\n(remote selections)] as selections
+    [Peer list\n(status bar widget)] as peerlist
+  }
+
+  package "Commands" as cmds #BBDEFB {
+    [Share document\n(command palette)] as sharecmd
+    [Show peers\n(command palette)] as peercmd
+    [Sync status\n(status bar)] as statuscmd
+  }
+}
+
+cm6 --> cmext : editor transactions
+cmext --> optrans : local changes
+optrans --> socket : doc.edit RPC
+
+socket --> remoteapply : doc.remoteChange
+remoteapply --> cm6 : apply transaction\n(skip local echo)
+
+socket --> cursors : doc.presence
+socket --> peerlist : peer.discovered
+
+sharecmd --> socket : doc.share
+statuscmd --> socket : daemon.status
+
+vaultevents --> socket : doc.open (on file focus)
+
+reconn --> socket : maintain connection
+
+@enduml

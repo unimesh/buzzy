@@ -1,0 +1,52 @@
+@startuml protocol_recommendation
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam componentStyle rectangle
+skinparam ranksep 25
+
+title Recommended Protocol Stack
+
+rectangle "**Transport**\nQUIC (quinn-rs) + mDNS" as transport #FFEBEE {
+  card "LAN: mDNS/DNS-SD\n(_buzzy._tcp.local)" as mdns #FFFFFF
+  card "WAN: Rendezvous server\n(Iroh/DERP model)" as rendezvous #FFFFFF
+  card "Data: QUIC streams\n(multiplexed, 0-RTT)" as quic #FFFFFF
+}
+
+rectangle "**Identity**\nEd25519 + Sigchain + Petnames" as identity #F3E5F5 {
+  card "Per-device:\nEd25519 keypair" as devkey #FFFFFF
+  card "Per-user:\nSigchain (device roster)" as sigchain #FFFFFF
+  card "Display:\nPetnames (local labels)" as petnames #FFFFFF
+  card "Trust:\nTOFU + rekey warnings" as tofu #FFFFFF
+}
+
+rectangle "**Sync Protocol**\nAutomerge sync (Bloom filter delta)" as sync #FFF3E0 {
+  card "Catch-up:\nState vector exchange" as catchup #FFFFFF
+  card "Live:\nChange push + ack" as live #FFFFFF
+  card "Presence:\nEphemeral (no persist)" as presence #FFFFFF
+}
+
+rectangle "**Wire Format**\nAutomerge columnar binary" as wire #E3F2FD {
+  card "Operations:\nColumnar encoding (spec'd)" as ops #FFFFFF
+  card "Envelope:\nMagic + version + doc UUID" as envelope #FFFFFF
+}
+
+rectangle "**CRDT Engine**\nAutomerge-rs (RGA + Peritext)" as crdt #E8F5E9 {
+  card "Text:\nAutomerge.Text\n(character-level RGA)" as text #FFFFFF
+  card "Marks:\nPeritext-derived\n(comment anchors)" as marks #FFFFFF
+  card "Structure:\nBlock markers + Map\n(headings, lists, tables)" as blocks #FFFFFF
+}
+
+rectangle "**Sidecar**\n.buzzy binary (Automerge save)" as sidecar #FFF8E1 {
+  card "Format:\nMagic (SYNC) + version\n+ UUID + Automerge blob" as format #FFFFFF
+  card "Invariant:\n.md always human-readable\nwithout sidecar" as invariant #FFFFFF
+}
+
+transport -[hidden]down- identity
+identity -[hidden]down- sync
+sync -[hidden]down- wire
+wire -[hidden]down- crdt
+crdt -[hidden]down- sidecar
+
+@enduml

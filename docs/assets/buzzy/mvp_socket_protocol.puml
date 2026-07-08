@@ -1,0 +1,61 @@
+@startuml mvp_socket_protocol
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+skinparam sequenceArrowThickness 2
+skinparam sequenceLifeLineBorderColor #666666
+
+title JSON-RPC Socket Protocol — Editor ↔ Daemon (MVP)
+
+participant "Editor Plugin" as editor
+participant "buzd Daemon" as daemon
+participant "Remote Peer" as peer
+
+== Connection ==
+
+editor -> daemon : **connect**\n{client: "obsidian", version: "0.1.0"}
+daemon --> editor : {peerId: "ed25519:abc...", docs: [...]}
+
+== Open Document ==
+
+editor -> daemon : **doc.open**\n{path: "/vault/notes.md"}
+daemon --> editor : {docId: "uuid", content: "...",\n peers: [{id, name, cursor}],\n version: 42}
+
+== Local Edit ==
+
+editor -> daemon : **doc.edit**\n{docId, ops: [{insert: "hello", pos: 12}]}
+daemon --> editor : {ack: true, version: 43}
+daemon -> peer : [sync: encrypted ops]
+
+== Remote Edit ==
+
+peer -> daemon : [sync: encrypted ops]
+daemon --> editor : **doc.remoteChange**\n{docId, ops: [{insert: "world", pos: 30,\n author: "ed25519:xyz..."}], version: 44}
+
+== Cursor / Presence ==
+
+editor -> daemon : **doc.cursor**\n{docId, pos: 15, selection: [15, 20]}
+daemon -> peer : [presence update]
+peer -> daemon : [presence update]
+daemon --> editor : **doc.presence**\n{docId, peers: [{id, name, pos, selection}]}
+
+== File Changed Externally ==
+
+daemon --> editor : **doc.externalChange**\n{docId, content: "...", version: 45}
+
+== Peer Discovery ==
+
+daemon --> editor : **peer.discovered**\n{peerId: "ed25519:xyz...", name: "Bob",\n addr: "192.168.1.42:4433"}
+
+== Share ==
+
+editor -> daemon : **doc.share**\n{docId, peerId: "ed25519:xyz..."}
+daemon --> editor : {shared: true}
+
+== Status ==
+
+editor -> daemon : **daemon.status**
+daemon --> editor : {uptime: 3600, docs: 12,\n peers: 3, syncing: true}
+
+@enduml

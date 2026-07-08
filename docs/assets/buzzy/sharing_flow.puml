@@ -1,0 +1,85 @@
+@startuml sharing_flow
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam sequenceArrowThickness 2
+skinparam sequenceLifeLineBorderColor #666666
+
+title Document Sharing Flow — Owner to Collaborator
+
+actor "Owner (Alice)" as alice
+participant "Alice's Daemon" as ad
+participant "Relay / LAN" as relay
+participant "Bob's Daemon" as bd
+actor "Collaborator (Bob)" as bob
+
+== Grant Access ==
+
+alice -> ad : share doc.md --peer <bob-pubkey> --level edit
+activate ad
+ad -> ad : Generate document key\n(if first share)
+ad -> ad : Encrypt doc key to Bob's pubkey
+ad -> ad : Update .access file\n(sign with owner key)
+ad -> relay : Publish encrypted grant notification
+deactivate ad
+
+== Peer Connection ==
+
+relay -> bd : Deliver grant notification
+activate bd
+bd -> bd : Decrypt doc key with own privkey
+bd -> ad : Request CRDT state (authenticated)
+activate ad
+ad -> ad : Verify Bob's pubkey in .access
+ad -> bd : Send encrypted CRDT log
+deactivate ad
+bd -> bd : Merge into local state
+bd -> bd : Write doc.md + .crdt sidecar
+deactivate bd
+bd -> bob : Document appears in vault
+
+== Collaborative Editing ==
+
+alice -> ad : Edit paragraph 3
+activate ad
+ad -> ad : Generate CRDT operation
+ad -> ad : Encrypt with doc key
+ad -> relay : Broadcast operation
+deactivate ad
+relay -> bd : Forward encrypted op
+activate bd
+bd -> bd : Decrypt + verify permission level
+bd -> bd : Merge operation into CRDT
+bd -> bd : Update doc.md on disk
+deactivate bd
+
+bob -> bd : Add inline comment
+activate bd
+bd -> bd : Generate comment operation\n(anchored to text range)
+bd -> bd : Encrypt with doc key
+bd -> relay : Broadcast operation
+deactivate bd
+relay -> ad : Forward encrypted op
+activate ad
+ad -> ad : Decrypt + verify (comment level OK)
+ad -> ad : Merge comment anchor
+deactivate ad
+
+== Revocation ==
+
+alice -> ad : revoke --peer <bob-pubkey>
+activate ad
+ad -> ad : Remove Bob from .access
+ad -> ad : Rotate document key
+ad -> ad : Re-encrypt key to remaining peers
+ad -> relay : Publish new .access (signed)
+deactivate ad
+
+relay -> bd : Deliver revocation
+activate bd
+bd -> bd : Key decryption fails\nfor future operations
+bd -> bob : Access revoked notification
+deactivate bd
+
+@enduml

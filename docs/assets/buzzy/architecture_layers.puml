@@ -1,0 +1,46 @@
+@startuml architecture_layers
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 13
+skinparam componentStyle rectangle
+skinparam ranksep 40
+skinparam nodesep 30
+
+skinparam rectangle {
+  RoundCorner 8
+  FontSize 14
+}
+
+title Protocol Architecture — Layered Model
+
+rectangle "**Layer 3: Sharing**\nPeer discovery, relay, link sharing" as L3 #E8F4FD {
+  card "mDNS\n(LAN)" as mdns #FFFFFF
+  card "Relay Server\n(Internet)" as relay #FFFFFF
+  card "Git Remote\n(Async)" as git #FFFFFF
+  card "Capability URLs\n(Link share)" as links #FFFFFF
+}
+
+rectangle "**Layer 2: Access Control**\nDocument-level permissions" as L2 #FFF3E0 {
+  card "Capability\nTokens" as caps #FFFFFF
+  card "Grant\nEnforcement" as enforce #FFFFFF
+  card "Revocation\n& Key Rotation" as revoke #FFFFFF
+}
+
+rectangle "**Layer 1: Identity**\nCryptographic peer identity" as L1 #F3E5F5 {
+  card "Ed25519\nKeypair" as keys #FFFFFF
+  card "OIDC\nBinding" as oidc #FFFFFF
+}
+
+rectangle "**Layer 0: CRDT Sync Engine**\nConflict-free merge over structured markdown" as L0 #E8F5E9 {
+  card "Operation\nLog" as oplog #FFFFFF
+  card "Markdown\nCRDT" as crdt #FFFFFF
+  card "Comment\nAnchoring" as anchor #FFFFFF
+  card "Garbage\nCollection" as gc #FFFFFF
+}
+
+L3 -[hidden]down- L2
+L2 -[hidden]down- L1
+L1 -[hidden]down- L0
+
+@enduml

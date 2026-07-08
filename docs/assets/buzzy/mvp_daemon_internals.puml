@@ -1,0 +1,77 @@
+@startuml mvp_daemon_internals
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 11
+skinparam componentStyle rectangle
+skinparam ranksep 20
+skinparam nodesep 20
+
+title buzd Daemon — Internal Architecture (MVP)
+
+package "buzd process" as proc #E3F2FD {
+
+  package "Socket Server" as srv #BBDEFB {
+    [tokio TCP listener\n(Unix socket)] as listener
+    [JSON-RPC dispatcher] as dispatch
+    [Session registry\n(connected editors)] as sessions
+  }
+
+  package "Document Manager" as docmgr #BBDEFB {
+    [Document registry\n(path → DocState)] as docreg
+    [CrdtDocument trait\n(engine-agnostic handle)] as crdtdoc
+    [Change buffer\n(batch local ops)] as changebuf
+  }
+
+  package "CRDT Engine (pluggable)" as engine #C8E6C9 {
+    [impl CrdtEngine\n(Automerge for MVP)] as engineimpl
+    [impl SyncSession\n(per-peer sync state)] as syncsession
+  }
+
+  package "File I/O" as fileio #BBDEFB {
+    [notify-rs watcher\n(inotify/kqueue/FSEvents)] as watcher
+    [Debouncer\n(100ms coalesce)] as debounce
+    [MD renderer\n(CrdtDocument.text() → file)] as renderer
+    [External edit reconciler\n(CrdtDocument.update_text())] as differ
+  }
+
+  package "Network" as net #BBDEFB {
+    [mDNS advertiser\n(mdns-sd)] as mdnsadv
+    [mDNS browser\n(peer discovery)] as mdnsbrowse
+    [QUIC endpoint\n(quinn-rs)] as quicep
+    [Sync manager\n(SyncSession trait)] as syncmgr
+  }
+
+  package "Identity" as ident #BBDEFB {
+    [Ed25519 keypair\n(~/.buzd/identity.key)] as keypair
+    [Peer registry\n(known pubkeys → names)] as peerreg
+  }
+}
+
+listener --> dispatch
+dispatch --> docreg : doc.open, doc.edit
+dispatch --> sessions : track connected editors
+docreg --> crdtdoc : operations via trait
+crdtdoc --> engineimpl : delegates to engine
+crdtdoc --> changebuf : buffer local changes
+changebuf --> syncmgr : flush to peers
+changebuf --> renderer : render to .md
+
+watcher --> debounce : raw FS events
+debounce --> differ : coalesced change
+differ --> crdtdoc : update_text() via trait
+
+syncmgr --> syncsession : generate/receive messages
+syncmgr --> quicep : send/receive bytes
+mdnsbrowse --> peerreg : discovered peers
+mdnsadv --> mdnsbrowse : advertise self
+
+quicep --> syncmgr : incoming sync
+syncsession --> crdtdoc : apply remote changes
+crdtdoc --> renderer : update .md
+crdtdoc --> sessions : notify editors
+
+keypair --> syncmgr : sign handshake
+peerreg --> syncmgr : verify peer
+
+@enduml

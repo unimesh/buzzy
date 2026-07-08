@@ -1,0 +1,52 @@
+@startuml encryption_model
+!theme plain
+skinparam backgroundColor #FFFFFF
+skinparam defaultFontName "Inter"
+skinparam defaultFontSize 12
+skinparam objectBorderColor #333333
+
+title End-to-End Encryption Model
+
+object "Document Key" as dockey #E8F5E9 {
+  type = "AES-256-GCM (symmetric)"
+  scope = "per-document"
+  rotates = "on peer revocation"
+}
+
+object "Owner Keypair" as ownerkey #E3F2FD {
+  type = "Ed25519"
+  public = "identity + verification"
+  private = "signs .access, decrypts doc key"
+}
+
+object "Peer B Keypair" as peerkey #F3E5F5 {
+  type = "Ed25519"
+  public = "referenced in .access grant"
+  private = "decrypts doc key envelope"
+}
+
+object ".access File" as accessfile #FFF8E1 {
+  owner = "<owner-pubkey>"
+  grants = "[{peer: B, level: edit}]"
+  signature = "<owner-signature>"
+}
+
+object "Encrypted Doc Key\n(per-peer envelope)" as envelope #FFEBEE {
+  to_owner = "nacl.box(dockey, owner.pub)"
+  to_peer_b = "nacl.box(dockey, peerB.pub)"
+}
+
+object "CRDT Operations\n(on wire)" as wireops #F5F5F5 {
+  header = "{doc_id, sender_pubkey, seq}"
+  payload = "AES-GCM(dockey, operation)"
+  relay_sees = "header only (cannot decrypt)"
+}
+
+ownerkey --> accessfile : signs
+ownerkey --> envelope : encrypted to
+peerkey --> envelope : encrypted to
+dockey --> envelope : wrapped in
+dockey --> wireops : encrypts payload
+accessfile --> dockey : authorises access to
+
+@enduml
